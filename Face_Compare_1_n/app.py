@@ -26,9 +26,7 @@ import shutil
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
-#CORS(app)
 
-# Directory setup
 temp_dir = os.path.join(os.getenv("TEMP"), "decrypted_files")
 downloads_dir = os.path.join(os.path.expanduser("~"), "Downloads")
 base_dir = temp_dir
@@ -37,43 +35,11 @@ embedding_file = os.path.join(base_dir, "hallticket_embeddings.csv")
 candidate_photo_dir = os.path.join(base_dir, "CandidatePhotographs")
 os.makedirs(candidate_photo_dir, exist_ok=True)
 
-# Load stored embeddings
 
-
-# Directory setup
 temp_dir = os.path.join(os.getenv("TEMP"), "decrypted_files")
 base_dir = temp_dir
 
-# embedding_file = os.path.join(base_dir, "hallticket_embeddings.csv")
-# candidate_photo_dir = os.path.join(base_dir, "CandidatePhotographs")
-# os.makedirs(candidate_photo_dir, exist_ok=True)
 
-## Load stored embeddings
-# stored_embeddings = {}
-#
-# # Auto-detect CSV delimiter and load embeddings
-# with open(embedding_file, 'r', encoding='utf-8') as file:
-#     sample = file.readline()
-#     delimiter = '\t' if '\t' in sample else ','
-#
-# with open(embedding_file, 'r', encoding='utf-8') as file:
-#     reader = csv.reader(file, delimiter=delimiter)
-#     header = next(reader, None)
-#
-#     for row in reader:
-#         if len(row) < 2:
-#             continue
-#         applicant_cred_id = row[0].strip()
-#         try:
-#             embedding_str = row[1].strip().replace("{", "").replace("}", "")
-#             embedding_vector = np.array([float(x) for x in embedding_str.split(",")])
-#             stored_embeddings[applicant_cred_id] = embedding_vector
-#         except (ValueError, IndexError) as e:
-#             print(f"Skipping row due to error: {row} -> {e}")
-#
-# print(f"Loaded {len(stored_embeddings)} embeddings successfully!")
-
-# Load stored embeddings (safely)
 stored_embeddings = {}
 
 if os.path.exists(embedding_file):
@@ -105,9 +71,9 @@ else:
 
 
 
-# Store last accessed _live image path
+
 last_live_image_path = None
-# Function to load embeddings
+
 def load_embeddings_from_temp():
     embedding_file = os.path.join(temp_dir, 'hallticket_embeddings.csv')
 
@@ -134,10 +100,10 @@ def load_embeddings_from_temp():
     return stored_embeddings
 
 
-# Store last accessed _live image path
+
 last_live_image_path = None
 
-# Helpers
+
 def encode_image_to_base64(image_path):
     if os.path.exists(image_path):
         with open(image_path, "rb") as image_file:
@@ -300,81 +266,7 @@ def match_face():
 
     return jsonify({"error": "Invalid request"}), 400
 
-# @app.route('/check_file', methods=['POST'])
 
-# def check_file():
-#     filename = request.form.get('file', '').strip()
-#
-#     if not filename:
-#         return jsonify({"status": "error", "message": "Filename not provided"}), 400
-#
-#     file_path = os.path.join(downloads_dir, filename)  # Check file in Downloads
-#
-#     if not os.path.exists(file_path):
-#         return jsonify({"status": "not_found", "message": f"{filename} does not exist"}), 404
-#
-#     if file_path.endswith('.crdownload'):
-#         return jsonify({"status": "incomplete", "message": "File download is not complete"}), 409
-#
-#     try:
-#         # Extract to Downloads directory
-#         extracted_folder = os.path.join(downloads_dir, Path(filename).stem)
-#
-#         # Extract ZIP file
-#         with zipfile.ZipFile(file_path, 'r') as zip_ref:
-#             zip_ref.extractall(extracted_folder)
-#
-#         move_bat_path = os.path.join(extracted_folder, "move.bat")
-#         print(f"move.bat path: {move_bat_path}")  # Debugging to verify the path
-#
-#         if os.path.exists(move_bat_path):
-#             # Execute move.bat in the extracted folder
-#             result = subprocess.run(
-#                 ["cmd", "/c", move_bat_path],
-#                 shell=True,
-#                 capture_output=True,
-#                 text=True,
-#                 cwd=extracted_folder  # Ensure the batch file is executed in the correct directory
-#             )
-#
-#             if result.returncode != 0:
-#                 return jsonify({
-#                     "status": "error",
-#                     "message": "move.bat execution failed",
-#                     "stderr": result.stderr.strip()
-#                 }), 500
-#
-#             # After move.bat execution, check for the embedding file again in temp directory
-#             try:
-#                 stored_embeddings = load_embeddings_from_temp()
-#             except FileNotFoundError as e:
-#                 return jsonify({
-#                     "status": "error",
-#                     "message": str(e)
-#                 }), 404
-#
-#             # Clean up the extracted folder
-#             try:
-#                 shutil.rmtree(extracted_folder)
-#             except Exception as e:
-#                 return jsonify({
-#                     "status": "error",
-#                     "message": f"Failed to delete extracted folder: {str(e)}"
-#                 }), 500
-#
-#             return jsonify({
-#                 "status": "success",
-#                 "message": "File extracted, move.bat executed, embedding file loaded, and folder deleted.",
-#                 "stdout": result.stdout.strip()
-#             }), 200
-#
-#         else:
-#             return jsonify({"status": "error", "message": "move.bat not found in extracted folder"}), 500
-#
-#     except zipfile.BadZipFile:
-#         return jsonify({"status": "error", "message": "Provided file is not a valid ZIP"}), 400
-#     except Exception as e:
-#         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/check_file', methods=['POST'])
 def check_file():
